@@ -1,0 +1,125 @@
+---
+title: "Mi Band Data Analysis"
+author: "Vinayak"
+date: "7/3/2019"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+---
+# Objective
+* To understand the effect of transformation of variables on linear regression models  
+
+## Simple Model
+* Building a simple linear regression model in order to study the variation of y (Ahead of % people) w.r.t x (Streak i.e. continuous days of walk)
+```{r warning = FALSE}
+library(readxl)
+setwd("C:\\Users\\nayak\\Desktop\\INSOFE\\CSE 7402C\\20190630_Batch64_CSE7402c_Multiple_Linear Regression_Lec02")
+miBand_data = read_excel("Regression.xlsx", sheet = "MiBand2", col_names = TRUE)
+miBand_data = miBand_data[,c(1,2)]
+colnames(miBand_data) = c("Streak", "Ahead_of_percent_people")
+head(miBand_data,5)
+plot(miBand_data$Streak, miBand_data$Ahead_of_percent_people,
+     xlab = "Streak", ylab = " Ahead of % People",
+     main = "Ahead of % People vs Streak",
+     cex.axis = 0.6, cey.axis = 0.6)
+```
+
+Fit a linear model Y = f(x).
+
+```{r warning = FALSE}
+test_data = miBand_data[74,]
+head(test_data)
+simple_model = lm(Ahead_of_percent_people~I(Streak^2), data = miBand_data)
+
+
+print(paste("Adjusted R-Sq of the model",   
+          sprintf("%.2f",summary(simple_model)$adj.r.squared)))
+summary(simple_model)
+par(mfrow = c(2,2))
+plot(simple_model)
+
+par(mfrow = c(1,1))
+plot(miBand_data$Streak, miBand_data$Ahead_of_percent_people,
+     xlab = "Streak", ylab = " Ahead of % People",
+     main = "Ahead of % People vs Streak",
+     cex.axis = 0.6, cey.axis = 0.6)
+abline(simple_model)
+
+miBand_data$SimpPred = predict(simple_model, newdata = miBand_data)
+test_data$SimpPred = predict(simple_model, newdata = test_data)
+test_data$Error = test_data$Ahead_of_percent_people - test_data$SimpPred
+test_data
+```
+
+## Transforming x to logscale
+
+Make a column log(Streak) and append it to the dataframe. Then fit a model to this data and make predictions accordingly.
+```{r warning = FALSE}
+miBand_data$logx = log(miBand_data$Streak, base = exp(1))
+test_data = miBand_data[74,]
+head(test_data)
+log_model = lm(Ahead_of_percent_people~logx, data = miBand_data)
+print(paste("Adjusted R-Sq of the model",   
+          sprintf("%.2f",summary(log_model)$adj.r.squared)))
+summary(log_model)
+par(mfrow = c(2,2))
+plot(log_model)
+par(mfrow = c(1,1))
+plot(miBand_data$logx, miBand_data$Ahead_of_percent_people,
+     xlab = "Log(Streak)", ylab = " Ahead of % People",
+     main = "Ahead of % People vs Log(Streak)",
+     cex.axis = 0.6, cey.axis = 0.6)
+abline(log_model)
+
+miBand_data$LogPred = predict(log_model, newdata = miBand_data)
+test_data$LogPred = predict(log_model, newdata = test_data)
+test_data$LogErr = test_data$Ahead_of_percent_people - test_data$LogPred
+test_data
+```
+
+## Making y quadratic 
+* Using $Y^2$ as our dependent variable to calculate the errors.
+```{r warning = FALSE}
+miBand_data$ysq = miBand_data$Ahead_of_percent_people * miBand_data$Ahead_of_percent_people
+test_data = miBand_data[74,]
+head(test_data)
+Sq_model = lm(ysq~Streak, data = miBand_data)
+print(paste("Adjusted R-Sq of the model",   
+          sprintf("%.2f",summary(Sq_model)$adj.r.squared)))
+summary(Sq_model)
+par(mfrow = c(2,2))
+plot(Sq_model)
+par(mfrow = c(1,1))
+plot(miBand_data$Streak, miBand_data$ysq,
+     xlab = "Streak", ylab = " Ahead of % People Squared",
+     main = "Ahead of % People Squared vs Streak",
+     cex.axis = 0.6, cey.axis = 0.6)
+abline(Sq_model)
+
+miBand_data$SqPred = sqrt(predict(Sq_model, newdata = miBand_data))
+test_data$SqPred = sqrt(predict(Sq_model, newdata = test_data))
+test_data$SqErr = test_data$Ahead_of_percent_people - test_data$SqPred
+test_data
+```
+## Comparison of Errors
+```{r message = FALSE}
+library(DMwR)
+
+miBand_data = miBand_data[complete.cases(miBand_data),]
+
+print("Simple Model Statistics")
+sprintf("%.2f",regr.eval(miBand_data$Ahead_of_percent_people, miBand_data$SimpPred))
+
+print("Log Streak Model Statistics")
+sprintf("%.2f",regr.eval(miBand_data$Ahead_of_percent_people, miBand_data$LogPred))
+
+print("Squared Ahead of people Model Statistics")
+sprintf("%.2f",regr.eval(miBand_data$Ahead_of_percent_people, miBand_data$SqPred))
+```
+
+
+
+
+

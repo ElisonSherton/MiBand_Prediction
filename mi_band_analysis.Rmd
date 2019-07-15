@@ -15,7 +15,7 @@ output:
 * Building a simple linear regression model in order to study the variation of y (Ahead of % people) w.r.t x (Streak i.e. continuous days of walk)
 ```{r warning = FALSE}
 library(readxl)
-setwd("C:\\Users\\nayak\\Desktop\\INSOFE\\CSE 7402C\\20190630_Batch64_CSE7402c_Multiple_Linear Regression_Lec02")
+setwd("C:\\Users\\nayak\\Desktop\\INSOFE\\CSE_7402C\\Week_1_Linear_Regression\\20190630_Batch64_CSE7402c_Multiple_Linear_Regression_Lec02\\MiBand_Prediction")
 miBand_data = read_excel("Regression.xlsx", sheet = "MiBand2", col_names = TRUE)
 miBand_data = miBand_data[,c(1,2)]
 colnames(miBand_data) = c("Streak", "Ahead_of_percent_people")
@@ -118,7 +118,9 @@ sprintf("%.2f",regr.eval(miBand_data$Ahead_of_percent_people, miBand_data$LogPre
 print("Squared Ahead of people Model Statistics")
 sprintf("%.2f",regr.eval(miBand_data$Ahead_of_percent_people, miBand_data$SqPred))
 ```
+Select the model that studies "Ahead of percent people" attribute wrt log of streak. It has got the highest $R^2$ value and the error of prediction is the least out of all the other models.
 
+Analysis of residual plots shows that the errors are not truly random but follow a pattern irrespective of the transformation. In such cases, decide which model is giving the highest accuracy and if the accuracy is not upto the mark, linear regression might not be the way to go about for this particular problem.
 
 
 
